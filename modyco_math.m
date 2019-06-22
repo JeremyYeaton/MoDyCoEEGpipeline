@@ -2,9 +2,10 @@
 mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
 cd(mainDir); 
 
-modyco_settings_global
 modyco_settings_project
-%% Mean and store data
+%% Mean and store data by participant
+averages    = [];
+differences = [];
 for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
@@ -14,6 +15,7 @@ for sub = 1:length(subs)
     cfg.missingchannel   = setdiff(allElecs.label,data.label);
     cfg.neighbours       = neighbors;
     cfg.feedback         = 'no';
+    % Interpolate missing channels
     if ~isempty(cfg.missingchannel)
         disp('Interpolating missing electrodes:');
         for chan = cfg.missingchannel
@@ -21,58 +23,45 @@ for sub = 1:length(subs)
         end
         data             = ft_channelrepair(cfg,data);
     end
-    %%%%%%%%%% Experiment-specific %%%%%%%%%%
-    disp('Averaging over Canonical trials...');
-    cfg            = default_cfg;%data.cfg;
-    cfg.trials     = find(ismember(data.trialinfo,trials.can));
-    dataCan        = ft_timelockanalysis(cfg,data);
-    dataCan        = ft_timelockbaseline(cfg,dataCan);
-    disp('Averaging over Violation trials...');
-    cfg            = default_cfg;%data.cfg;
-    cfg.trials     = find(ismember(data.trialinfo,trials.vio));
-    dataVio        = ft_timelockanalysis(cfg,data);
-    dataVio        = ft_timelockbaseline(cfg,dataVio);
-    disp('Computing difference between conditions...');
-    cfg            = default_cfg;%data.cfg;
-    cfg.operation  = 'subtract';
-    cfg.parameter  = 'avg';
-    difference     = ft_math(cfg, dataVio, dataCan);
-    dataCan.cfg    = rmfield(dataCan.cfg,'previous');
-    dataVio.cfg    = rmfield(dataVio.cfg,'previous');
-    difference.cfg = rmfield(difference.cfg,'previous');
+    % Average all trials for each condition
+    for cond = 1:numberOfConditions
+        disp(['Averaging over trials for condition ',num2str(cond),'...']);
+        cfg            = default_cfg;%data.cfg;
+        cfg.trials     = find(ismember(data.trialinfo,trials{cond}));
+        averages{cond} = ft_timelockanalysis(cfg,data);
+        averages{cond} = ft_timelockbaseline(cfg,averages{cond});
+    end
+    % Do subtraction between condition pairs of interest
+    for P = 1:length(pairs)
+        pair = pairs{P};
+        disp(['Computing difference between conditions ',num2str(pair(1)),' and ',num2str(pair(2)),'...']);
+        cfg            = default_cfg;%data.cfg;
+        cfg.operation  = 'subtract';
+        cfg.parameter  = 'avg';
+        differences{P} = ft_math(cfg, averages{pair(1)}, averages{pair(2)});
+    end
     disp(['Saving data file ',subID,' (',num2str(sub),')...']);
-    save([folders.timelock,'\\',subID,'_',folders.timelock,'_data.mat'],'dataCan','dataVio');
+    save([folders.timelock,'\\',subID,'_',folders.timelock,'_average.mat'],'averages');
     disp(['Saving difference file ',subID,' (',num2str(sub),')...']);
-    save([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'difference');
+    save([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'differences');
 end
 waitbar(1,'Done! Now do grand averaging!');
-%% Read data into struct array
+%% Read data into array for grand averaging
+D = [];
 for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
-    load([folders.timelock,'\\',subID,'_',folders.timelock,'_data.mat'],'dataCan','dataVio');
-    load([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'difference');
-    if strcmp(L1,'sw')
-        difference.time = time;
-        dataCan.time = time;
-        dataVio.time = time;
-    end
-%     cfg.interactive            = 'yes';
-%     cfg.channel                = swedChans;
-%     cfg.layout                 = elecLayout;
+    load([folders.timelock,'\\',subID,'_',folders.timelock,'_average.mat'],'averages');
+    load([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'differences');
     disp('Storing data in struct...');
-    dataStruc.participant{sub} = subID;
-    dataStruc.Vio{sub}         = dataVio;
-    dataStruc.Can{sub}         = dataCan;
-    dataStruc.Diff{sub}        = difference;
+    for cond = 1:numberOfConditions
+        D.avgs{sub,cond} = averages{cond};
+    end
+    for P = 1:length(pairs)
+        D.diffs{sub,P} = differences{P};
+    end
 end
-if strcmp(L1,'fr')
-    strucFr = dataStruc;
-    save(['ft_results\struc_',L1,'.mat'],'strucFr')
-elseif strcmp(L1,'sw')
-    strucSw = dataStruc;
-    save(['ft_results\struc_',L1,'.mat'],'strucSw')
-end
+save([folders.timelock,'\\allData.mat'],'D');
 %% Calculate averages
 cfg = [];
 cfg.baseline = 'yes';

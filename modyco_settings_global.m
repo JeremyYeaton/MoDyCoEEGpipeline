@@ -1,7 +1,5 @@
 %% Settings
 % Pilot data directory
-mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
-cd(mainDir); 
 load('biosemi_neighbours.mat','neighbors');
 allElecs = readtable('biosemi64.txt');
 % Directory names
@@ -18,7 +16,7 @@ allFolders = {folders.prep,folders.visRej,folders.ica,folders.rmvArtfct,...
     folders.timelock,folders.results,folders.figs};
 for folder = 1:length(allFolders)
     if ~isfolder(allFolders{folder})
-        mkdir(folder)
+        mkdir(allFolders{folder})
     end
 end
 

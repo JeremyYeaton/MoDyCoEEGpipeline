@@ -2,16 +2,16 @@
 mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
 cd(mainDir); 
 
-modyco_settings_global
 modyco_settings_project
 %% Import; epoch; filter; separate & mean EOGs
 tic
 currSub = 1;
 for sub = currSub:length(subs)
     subID            = subs{sub};
+    disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
     if ~isfile(EEGLABFILE)
-        EEG              = pop_biosig([mainDir,'\\raw_data\\',subID,'\\',subID,'.bdf'],...
+        EEG              = pop_biosig([mainDir,'\\raw_data\\',subID,'.bdf'],...
             'channels',1:70,'ref',[65 66] ,'refoptions',{'keepref' 'on'});
         EEG              = eeg_checkset( EEG );
         EEG              = pop_saveset( EEG, 'filename',EEGLABFILE,'filepath',[mainDir,'\\']);
@@ -70,7 +70,7 @@ for sub = currSub:length(subs)
     % Automatic artifact rejection
     cfg.artfctdef                    = artfctdef;
     [cfg, artifact_eog]              = ft_artifact_eog(cfg,data);
-    cfg.artfctdef.zvalue.cutoff      = 20;
+%     cfg.artfctdef.zvalue.cutoff      = 20;
     [cfg, artifact_zval]             = ft_artifact_zvalue(cfg,data);
     % Add artifacts to cfg
     cfg.artfctdef.eog.artifact       = artifact_eog;
@@ -80,7 +80,6 @@ for sub = currSub:length(subs)
     fileName = [folders.prep,'\\',subID,'_',folders.prep,'.mat'];
     disp(['Saving ',fileName,' (',num2str(sub),')...']);
     save(fileName,'data')
-%     clear cfg data
     toc
 end
 waitbar(1,'Done! Now do visual rejection!');
