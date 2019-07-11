@@ -1,6 +1,6 @@
 %% Settings
 modyco_settings_global
-mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
+mainDir = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
 cd(mainDir); 
 
 % Subject Identifiers
