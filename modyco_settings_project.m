@@ -1,3 +1,8 @@
+% Project/ experiment specific settings for EEG processing pipeline
+% (c) Jeremy Yeaton
+% Created: June 2019
+% Updated: October 2019
+
 %% Settings
 modyco_settings_global
 mainDir = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
