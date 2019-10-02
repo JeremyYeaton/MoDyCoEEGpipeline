@@ -1,4 +1,4 @@
-% Perform binnning & averaging on preprocessed data
+% Perform comparisons on binned averages from preprocessed data
 % (c) Jeremy Yeaton
 % Created: June 2019
 % Updated: October 2019
