@@ -14,6 +14,16 @@ You may also want to go through the tutorials provided by the toolboxes to get a
 
 ## Getting started
 Once you have everything installed on whichever computer you'll be doing your analysis:
-- Create a folder (directory) to keep everything in one place
-- Click on "Clone or download" and select "Download ZIP"
-- Unzip the contents in your new experimental directory
+1. Create a folder (directory) to keep everything in one place
+2. Click on "Clone or download" and select "Download ZIP"
+3. Unzip the contents in your new experimental directory
+4. Open Matlab and navigate to this directory
+
+## Defining project-specific settings
+First thing first: change mainDir to your directory. You'll have to do this for each of the scripts you work with that have mainDir in the header. 
+
+Next, you'll input the identifiers of your subjects as they appear in the filenames of the .bdf raw EEG files.
+
+The next few are pretty self-explanatory, and any changes should be made carefully as these are methodological choices.
+
+Once you get down to trial types, enter the number of experimental conditions you have, then the specific trigger labels that correspond to each condition.
