@@ -1,3 +1,8 @@
+% Perform binnning & averaging on preprocessed data
+% (c) Jeremy Yeaton
+% Created: June 2019
+% Updated: October 2019
+
 %% Import settings from file
 mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
 cd(mainDir); 
