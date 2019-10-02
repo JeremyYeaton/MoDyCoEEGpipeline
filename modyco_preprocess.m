@@ -1,4 +1,4 @@
-% Pipeline of processing for EEG data for the MoDyCo Lab
+% Preprocessing pipeline for EEG data for the MoDyCo Lab
 % (c) Jeremy Yeaton
 % Created: June 2019
 % Updated: October 2019
