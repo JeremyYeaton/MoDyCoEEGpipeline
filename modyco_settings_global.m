@@ -1,3 +1,8 @@
+% Global settings for EEG data processing pipeline
+% (c) Jeremy Yeaton
+% Created: June 2019
+% Updated: October 2019
+
 %% Settings
 % Pilot data directory
 load('biosemi_neighbours.mat','neighbors');
