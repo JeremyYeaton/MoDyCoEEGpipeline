@@ -27,3 +27,5 @@ Next, you'll input the identifiers of your subjects as they appear in the filena
 The next few are pretty self-explanatory, and any changes should be made carefully as these are methodological choices.
 
 Once you get down to trial types, enter the number of experimental conditions you have, then the specific trigger labels that correspond to each condition.
+
+A course outline of the actual pipeline is provided in the [processingChecklist file](https://github.com/JeremyYeaton/MoDyCoEEGpipeline/blob/master/processingChecklist.pdf).
