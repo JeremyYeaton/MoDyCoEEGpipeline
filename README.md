@@ -20,6 +20,8 @@ Once you have everything installed on whichever computer you'll be doing your an
 4. Open Matlab and navigate to this directory
 
 ## Defining project-specific settings
+Open modyco_settings_project.m. This is where the settings specific to your project/experiment are stored. 
+
 First thing first: change mainDir to your directory. You'll have to do this for each of the scripts you work with that have mainDir in the header. 
 
 Next, you'll input the identifiers of your subjects as they appear in the filenames of the .bdf raw EEG files.
