@@ -5,11 +5,11 @@
 
 %% Settings
 modyco_settings_global
-mainDir = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
+mainDir = 'C:\Users\LPC\Documents\JDY'; % Change this to your experimental directory
 cd(mainDir); 
 
 % Subject Identifiers
-subs  = {'s_04nm','s_07ba'};
+subs  = {'1002_BI_RG_aud','1002_BI_RG_vis'};
 
 % Set filtering band limits
 preproc.lpfreq      = 40; % Low pass frequency (Hz)
@@ -18,18 +18,20 @@ preproc.hpfreq      = .5; % High pass frequency (Hz)
 % Set epoching parameters
 baseline            = [-0.1 0]; % [-0.1 0] uses a 100ms pre-stim baseline
 trialdef.prestim    = 0.1; % 0.1 = 100ms pre-stimulus
-trialdef.poststim   = 1; % 1 = 1000 ms post-stimulus
+trialdef.poststim   = .8; % 1 = 1000 ms post-stimulus
 
 % Max number of standard deviations from the mean before trial rejection
 artfctdef.zvalue.cutoff      = 20;
 
 % Trial types (trigger labels)
-numberOfConditions  = 2;
+numberOfConditions  = 4;
 trials              = [];
 allTrials           = [];
 % Specify trigger values for each condition:
-trials{1}           = [212,214,222,224,231,232,233,234,241,242,243,244]; % canonical
-trials{2}           = [112,114,122,124,131,132,133,134,141,142,143,144]; % violation
+trials{1}           = [10]; 
+trials{2}           = [20]; 
+trials{3}           = [30,31]; 
+trials{4}           = [40,60]; 
 for condition = 1:numberOfConditions
     allTrials = [allTrials,trials{condition}];
 end
@@ -50,4 +52,4 @@ default_cfg             = cfg;
 lats = {[.3 .5],[.5 .7],[.7 .9],[.9 1]}; % Latencies of interest in seconds
 
 % Electrode subsets
-frontal = {'F4','F3','F7','F8'};
+% frontal = {'F4','F3','F7','F8'};
