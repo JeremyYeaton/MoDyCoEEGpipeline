@@ -1,3 +1,7 @@
+% Plot averaged EEG data
+% (c) Jeremy D. Yeaton
+% Created April 2019
+
 %% Load settings and relevant files
 swopSettingsAnalysis
 load('ft_results\struc_fr.mat','strucFr')
