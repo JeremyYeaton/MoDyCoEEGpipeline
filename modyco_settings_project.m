@@ -5,11 +5,11 @@
 
 %% Settings
 modyco_settings_global
-mainDir = 'C:\Users\LPC\Documents\JDY'; % Change this to your experimental directory
+mainDir = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP'; % Change this to your experimental directory
 cd(mainDir); 
 
 % Subject Identifiers
-subs  = {'1002_BI_RG_aud','1002_BI_RG_vis'};
+subs  = {'1014_FR_ER'};%{'1002_BI_RG_aud'};%,'1002_BI_RG_vis'
 
 % Set filtering band limits
 preproc.lpfreq      = 40; % Low pass frequency (Hz)
@@ -28,10 +28,10 @@ numberOfConditions  = 4;
 trials              = [];
 allTrials           = [];
 % Specify trigger values for each condition:
-trials{1}           = [10]; 
-trials{2}           = [20]; 
-trials{3}           = [30,31]; 
-trials{4}           = [40,60]; 
+trials{1}           = [115, 215]; 
+trials{2}           = [125,225]; 
+trials{3}           = [135,235]; 
+trials{4}           = [145,245]; 
 for condition = 1:numberOfConditions
     allTrials = [allTrials,trials{condition}];
 end
@@ -45,7 +45,7 @@ cfg.preproc             = preproc;
 cfg.baselinewindow      = baseline;
 cfg.baseline            = baseline;
 cfg.trialdef            = trialdef;
-% cfg.trialfun            = 'ft_trialfun_swop';
+cfg.trialfun            = 'ft_trialfun_bilchin';
 default_cfg             = cfg;
 
 % Latencies for ERP analysis

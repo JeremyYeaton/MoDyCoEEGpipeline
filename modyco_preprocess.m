@@ -4,7 +4,7 @@
 % Updated: October 2019
 
 %% Import settings from file
-mainDir      = 'C:\Users\LPC\Documents\JDY'; % Change this to your experimental directory
+mainDir      = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP\yaru'; % Change this to your experimental directory
 cd(mainDir); 
 
 modyco_settings_project
@@ -25,6 +25,11 @@ for sub = currSub%:length(subs)
     cfg.refchannel          = {'M1' 'M2'};
     cfg.preproc.refchannel  = {'M1' 'M2'};
     cfg.dataset             = EEGLABFILE;
+    tradFileName            = ['yaru\' subID(1:4) '_trad.csv'];
+    if exist(tradFileName,'file')
+        trad = readtable(tradFileName);
+        cfg.trialdef.trad = trad.Traduction;
+    end
     cfg                     = ft_definetrial(cfg);
     data                    = ft_preprocessing(cfg);
     % Separate, mean, and recombine bipolar channels
