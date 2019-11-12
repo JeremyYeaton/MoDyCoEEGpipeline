@@ -12,7 +12,7 @@ modyco_settings_project
 %% Import; epoch; filter; separate & mean EOGs
 tic
 currSub = 1;
-for sub = currSub%:length(subs)
+for sub = currSub:length(subs)
     subID            = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];

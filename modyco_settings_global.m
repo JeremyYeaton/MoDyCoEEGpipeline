@@ -5,7 +5,7 @@
 
 %% Settings
 load('biosemi_neighbours.mat','neighbors');
-% allElecs = readtable('biosemi64.txt');
+allElecs = readtable('biosemi64.txt');
 % Directory names
 folders             = [];
 folders.eeglabTag   = 'import';
