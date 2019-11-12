@@ -5,11 +5,13 @@
 
 %% Settings
 modyco_settings_global
-mainDir = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP'; % Change this to your experimental directory
+% mainDir      = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP\yaru'; % Change this to your experimental directory
+mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
+
 cd(mainDir); 
 
 % Subject Identifiers
-subs  = {'1014_FR_ER'};%{'1002_BI_RG_aud'};%,'1002_BI_RG_vis'
+subs  = {'1014_FR_ER','1016_FR_PT','1017_FR_IQ','1018_BI_ZTT'};%{'1002_BI_RG_aud'};%,'1002_BI_RG_vis'
 
 % Set filtering band limits
 preproc.lpfreq      = 40; % Low pass frequency (Hz)

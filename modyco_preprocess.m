@@ -4,7 +4,8 @@
 % Updated: October 2019
 
 %% Import settings from file
-mainDir      = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP\yaru'; % Change this to your experimental directory
+% mainDir      = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP\yaru'; % Change this to your experimental directory
+mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
 cd(mainDir); 
 
 modyco_settings_project
@@ -16,7 +17,7 @@ for sub = currSub%:length(subs)
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
     if ~isfile(EEGLABFILE)
-        EEG              = pop_biosig([mainDir,'\\yaru\\BILCHIN_',subID,'.bdf'],...
+        EEG              = pop_biosig([mainDir,'\\EEG_data\\BILCHIN_',subID,'.bdf'],...
             'channels',1:70,'ref',[65 66] ,'refoptions',{'keepref' 'on'});
         EEG              = eeg_checkset( EEG );
         EEG              = pop_saveset( EEG, 'filename',EEGLABFILE,'filepath',[mainDir,'\\']);
