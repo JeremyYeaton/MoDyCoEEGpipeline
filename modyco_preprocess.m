@@ -6,13 +6,13 @@
 %% Import settings from file
 % mainDir      = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP\yaru'; % Change this to your experimental directory
 mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
-cd(mainDir); 
+cd(mainDir); addpath('../MoDyCoEEGpipeline');
 
 modyco_settings_project
 %% Import; epoch; filter; separate & mean EOGs
 tic
 currSub = 1;
-for sub = currSub:length(subs)
+for sub = currSub%:length(subs)
     subID            = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
@@ -22,6 +22,8 @@ for sub = currSub:length(subs)
         EEG              = eeg_checkset( EEG );
         EEG              = pop_saveset( EEG, 'filename',EEGLABFILE,'filepath',[mainDir,'\\']);
     end
+% end
+% %%
     cfg                     = default_cfg;
     cfg.refchannel          = {'M1' 'M2'};
     cfg.preproc.refchannel  = {'M1' 'M2'};
@@ -148,7 +150,7 @@ for sub = 1:length(subs)
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
     cfg           = [];
-    cfg.trl       = data.cfg.trl;
+%     cfg.trl       = data.cfg.trl;
     cfg.layout    = 'biosemi64.lay';
     cfg.component = 1:25;
     cfg.comment   = 'no';

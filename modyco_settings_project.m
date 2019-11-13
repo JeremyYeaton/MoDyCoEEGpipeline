@@ -11,7 +11,10 @@ mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
 cd(mainDir); 
 
 % Subject Identifiers
-subs  = {'1014_FR_ER','1016_FR_PT','1017_FR_IQ','1018_BI_ZTT'};%{'1002_BI_RG_aud'};%,'1002_BI_RG_vis'
+subs  = {'1014_FR_ER','1016_FR_PT','1017_FR_IQ','1018_BI_ZTT'};
+% subs = {'1001_FR_PP_audVis','1001_FR_PP_vis','1002_BI_RG_aud','1002_BI_RG_vis',...
+%     '1003_FR_MC','1004_FR_MV','1005_BI_CC','1006_BI_XYW_aud','1006_BI_XYW_vis',...
+%     '1007_BI_YZH','1008_FR_AR','1010_BI_LJY','1011_BI_HXY','1012_FR_AL','1013_FR_SG'};
 
 % Set filtering band limits
 preproc.lpfreq      = 40; % Low pass frequency (Hz)
