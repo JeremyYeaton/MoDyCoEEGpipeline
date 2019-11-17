@@ -71,6 +71,15 @@ save([folders.timelock,'\\allData.mat'],'D');
 cfg = [];
 cfg.baseline = 'yes';
 cfg.refchannel = 'M';
+
+
+grandAvg{1} = ft_timelockgrandaverage(cfg, D.avgs{1,1},D.avgs{1,5},D.avgs{2,1},D.avgs{2,5});
+grandAvg{2} = ft_timelockgrandaverage(cfg, D.avgs{:,1},D.avgs{:,5});
+grandAvg{3} = ft_timelockgrandaverage(cfg, D.avgs{:,1},D.avgs{:,5});
+
+%%
+
+
 % cfg.channel = swedChans;
 if strcmp(L1,'fr') 
     grandavgfr.Diff = ft_timelockgrandaverage(cfg, strucFr.Diff{1}, strucFr.Diff{2},...
