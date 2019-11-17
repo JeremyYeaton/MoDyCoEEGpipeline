@@ -29,14 +29,20 @@ trialdef.poststim   = .8; % 1 = 1000 ms post-stimulus
 artfctdef.zvalue.cutoff      = 20;
 
 % Trial types (trigger labels)
-numberOfConditions  = 4;
+numberOfConditions  = 8;
 trials              = [];
 allTrials           = [];
 % Specify trigger values for each condition:
-trials{1}           = [115, 215]; 
-trials{2}           = [125,225]; 
-trials{3}           = [135,235]; 
-trials{4}           = [145,245]; 
+% Auditory
+trials{1}           = [115]; 
+trials{2}           = [125]; 
+trials{3}           = [135]; 
+trials{4}           = [145]; 
+% Visual
+trials{5}           = [215]; 
+trials{6}           = [225]; 
+trials{7}           = [235]; 
+trials{8}           = [245];
 for condition = 1:numberOfConditions
     allTrials = [allTrials,trials{condition}];
 end
