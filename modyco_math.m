@@ -4,14 +4,14 @@
 % Updated: October 2019
 
 %% Import settings from file
-mainDir      = 'C:\\Users\\jdyea\\OneDrive\\MoDyCo\\_pilotSWOP'; % Change this to your experimental directory
-cd(mainDir); 
+mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
+cd(mainDir); addpath('../MoDyCoEEGpipeline');
 
 modyco_settings_project
 %% Mean and store data by participant
-averages    = [];
-differences = [];
-for sub = 1:length(subs)
+% averages    = [];
+% differences = [];
+for sub = 8%1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
@@ -29,15 +29,16 @@ for sub = 1:length(subs)
         data             = ft_channelrepair(cfg,data);
     end
     % Average all trials for each condition
-    for cond = 1:numberOfConditions
+    for cond = 5:8%1:numberOfConditions
         disp(['Averaging over trials for condition ',num2str(cond),'...']);
         cfg            = default_cfg;%data.cfg;
         cfg.trials     = find(ismember(data.trialinfo,trials{cond}));
         averages{cond} = ft_timelockanalysis(cfg,data);
+        cfg = rmfield(cfg,'demean');
         averages{cond} = ft_timelockbaseline(cfg,averages{cond});
     end
     % Do subtraction between condition pairs of interest
-    for P = 1:length(pairs)
+    for P = 4:6%1:length(pairs)
         pair = pairs{P};
         disp(['Computing difference between conditions ',num2str(pair(1)),' and ',num2str(pair(2)),'...']);
         cfg            = default_cfg;%data.cfg;
@@ -52,18 +53,21 @@ for sub = 1:length(subs)
 end
 waitbar(1,'Done! Now do grand averaging!');
 %% Read data into array for grand averaging
-D = [];
-for sub = 1:length(subs)
+% D = [];
+for sub = 8%1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.timelock,'\\',subID,'_',folders.timelock,'_average.mat'],'averages');
     load([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'differences');
     disp('Storing data in struct...');
-    for cond = 1:numberOfConditions
+%     averages{cond}.cfg = rmfield(averages{cond}.cfg,'previous');
+    for cond = 5:8%1:numberOfConditions
         D.avgs{sub,cond} = averages{cond};
+        D.avgs{sub,cond}.cfg = rmfield(D.avgs{sub,cond}.cfg,'previous');
     end
-    for P = 1:length(pairs)
+    for P = 4:6%1:length(pairs)
         D.diffs{sub,P} = differences{P};
+        D.diffs{sub,cond}.cfg = rmfield(D.diffs{sub,P}.cfg,'previous');
     end
 end
 save([folders.timelock,'\\allData.mat'],'D');
@@ -71,14 +75,51 @@ save([folders.timelock,'\\allData.mat'],'D');
 cfg = [];
 cfg.baseline = 'yes';
 cfg.refchannel = 'M';
+grandAvg = [];
 
+% Natives
+grandAvg{1,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,5});
+grandAvg{2,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,6});
+grandAvg{3,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,7});
+grandAvg{4,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,8});
+% Bilinguals
+grandAvg{1,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,5});
+grandAvg{2,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,6});
+grandAvg{3,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,7});
+grandAvg{4,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,8});
 
-grandAvg{1} = ft_timelockgrandaverage(cfg, D.avgs{1,1},D.avgs{1,5},D.avgs{2,1},D.avgs{2,5});
-grandAvg{2} = ft_timelockgrandaverage(cfg, D.avgs{:,1},D.avgs{:,5});
-grandAvg{3} = ft_timelockgrandaverage(cfg, D.avgs{:,1},D.avgs{:,5});
+% % Natives
+% grandAvg{1,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,1});
+% grandAvg{2,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,2});
+% grandAvg{3,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,3});
+% grandAvg{4,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,4});
+% % Bilinguals
+% grandAvg{1,2} = ft_timelockgrandaverage(cfg, D.avgs{5:7,1});
+% grandAvg{2,2} = ft_timelockgrandaverage(cfg, D.avgs{5:7,2});
+% grandAvg{3,2} = ft_timelockgrandaverage(cfg, D.avgs{5:7,3});
+% grandAvg{4,2} = ft_timelockgrandaverage(cfg, D.avgs{5:7,4});
 
 %%
+figure(1)
+cfg = [];
+cfg.layout = default_cfg.layout;
+ft_multiplotER(cfg,grandAvg{2,1},grandAvg{3,1},grandAvg{4,1})
+%%
+cfg = [];
+figure(2)
 
+pop = 2; % 1 is native, 2 is bilingual
+subplot(3,1,1)
+cfg.channel = 'Fz';
+ft_singleplotER(cfg,grandAvg{2,pop},grandAvg{3,pop},grandAvg{4,pop});
+subplot(3,1,2)
+cfg.channel = 'Cz';
+ft_singleplotER(cfg,grandAvg{2,pop},grandAvg{3,pop},grandAvg{4,pop});
+subplot(3,1,3)
+cfg.channel = 'Pz';
+ft_singleplotER(cfg,grandAvg{2,pop},grandAvg{3,pop},grandAvg{4,pop});
+legend({'Cond 2','Cond 3','Cond 4'})
+%%
 
 % cfg.channel = swedChans;
 if strcmp(L1,'fr') 

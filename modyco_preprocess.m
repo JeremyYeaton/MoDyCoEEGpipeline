@@ -11,8 +11,8 @@ cd(mainDir); addpath('../MoDyCoEEGpipeline');
 modyco_settings_project
 %% Import; epoch; filter; separate & mean EOGs
 tic
-currSub = 1;
-for sub = currSub%:length(subs)
+currSub = 3;
+for sub = 1%currSub:length(subs)
     subID            = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
@@ -81,15 +81,15 @@ for sub = currSub%:length(subs)
     cfg.demean              = 'yes';
     data.cfg.channel        = data.label;
     % Automatic artifact rejection
-    cfg.artfctdef                    = artfctdef;
-    [cfg, artifact_eog]              = ft_artifact_eog(cfg,data);
+%     cfg.artfctdef                    = artfctdef;
+%     [cfg, artifact_eog]              = ft_artifact_eog(cfg,data);
 %     cfg.artfctdef.zvalue.cutoff      = 20;
-    [cfg, artifact_zval]             = ft_artifact_zvalue(cfg,data);
+%     [cfg, artifact_zval]             = ft_artifact_zvalue(cfg,data);
     % Add artifacts to cfg
-    cfg.artfctdef.eog.artifact       = artifact_eog;
-    cfg.artfctdef.zvalue.artifact    = artifact_zval;
+%     cfg.artfctdef.eog.artifact       = artifact_eog;
+%     cfg.artfctdef.zvalue.artifact    = artifact_zval;
     % Reject artifacts and save
-    data                             = ft_rejectartifact(cfg,data);
+%     data                             = ft_rejectartifact(cfg,data);
     fileName = [folders.prep,'\\',subID,'_',folders.prep,'.mat'];
     disp(['Saving ',fileName,' (',num2str(sub),')...']);
     save(fileName,'data')
@@ -97,7 +97,7 @@ for sub = currSub%:length(subs)
 end
 waitbar(1,'Done! Now do visual rejection!');
 %% Visual rejection (Summary, channel, or trial)
-for sub = 1:length(subs)
+for sub = 1%1:length(subs)
     subID                = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data');
@@ -122,7 +122,7 @@ for sub = 1:length(subs)
 end
 waitbar(1,'Done! Now do ICA decomposition!');
 %% ICA decomposition
-for sub = 1:length(subs)
+for sub = 1%1:length(subs)
     subID      = subs{sub};
     saveName   = [folders.ica,'\\',subID,'_',folders.ica,'.mat'];
     saveFile   = 'y';
@@ -145,7 +145,7 @@ for sub = 1:length(subs)
 end
 waitbar(1,'Done! Now do component rejection!');
 %% Component rejection
-for sub = 1:length(subs)
+for sub = 1%1:length(subs)
     subID         = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
@@ -155,8 +155,8 @@ for sub = 1:length(subs)
     cfg.component = 1:25;
     cfg.comment   = 'no';
     cfg.viewmode  = 'component';
-    figure; ft_topoplotIC(cfg, comp)
-    ft_databrowser(cfg, comp)
+    figure; ft_topoplotIC(cfg, comp);
+    ft_databrowser(cfg, comp);
     artComp       = input('Enter components for removal separated by spaces: ','s');
     artComp       = sscanf(artComp,'%f')';
     cfg.component = artComp;
