@@ -148,20 +148,45 @@ elseif ~isfield(cfg.trialdef, 'eventtype') || isempty(cfg.trialdef.eventtype)
   end
 end
 
-% Select trials based on translations
-if isfield(cfg.trialdef, 'trad')
-    
-end
-
 % select all events with the specified value
 if isfield(cfg.trialdef, 'eventvalue') && ~isempty(cfg.trialdef.eventvalue)
-  for i=1:numel(event)-1
-%       repCorr = event(i+1).value > 150;
-%       isTarget1 = event(i-1)/5 == event(i)/10 || event(i-1)/5 == (event(i)-1)/10;
-%       isTarget2 = event(i-2)/5 == event(i)/10 || event(i-2)/5 == (event(i)-1)/10;
-%       isTarget = isTarget1 || isTarget2;
-      repCorr = event(i+1).value == 55;
-      sel(i) = sel(i) && ismatch(event(i).value, cfg.trialdef.eventvalue) && repCorr;% && isTarget; %%%%% add subfunction for extra conditions
+    trial = 1;
+    if isfield(cfg.trialdef,'version')
+        if strcmp(cfg.trialdef.version, 'new')
+            trial = -4;
+        else
+            cfg.trialdef.version = 'old';
+        end
+    end
+  for i=1:numel(event)
+      repCorr = 0; 
+      matchCheck = 0;
+      if ismatch(str2double(event(i).value), cfg.trialdef.eventvalue)
+          matchCheck = 1;
+          event(i).value = str2double(event(i).value);
+      elseif ismatch(event(i).value, cfg.trialdef.eventvalue)
+          matchCheck = 1;
+      end
+      if matchCheck
+          if strcmp(cfg.trialdef.version,'new')
+            if trial > 0 && trial < 181
+%               if ~strcmp(trigStr(2), num2str(cfg.trialdef.cond(trial)))
+%                 disp('Trials not aligned. Review events.')
+%                 return
+%               end
+              repCorr = cfg.trialdef.trad(trial);
+    %         elseif trial > 180 && trial < 186 && strcmp(cfg.trialdef.version, 'new')
+            elseif trial > 185
+                repCorr = cfg.trialdef.trad(trial-5);
+            end
+          else
+              repCorr = cfg.trialdef.trad(trial);
+          end
+        trial = trial + 1;
+        
+      end
+%       sel(i) = sel(i) && ismatch(event(i).value, cfg.trialdef.eventvalue) && repCorr;% && isTarget; %%%%% add subfunction for extra conditions
+      sel(i) = sel(i) && repCorr;
   end
 end
 
@@ -228,7 +253,13 @@ for i=sel
       % on brainvision these are called 'S  1' for stimuli or 'R  1' for responses
       val = [val; str2double(event(i).value(2:end))];
     else
-      val = [val; nan];
+        val = [val; nan];
+%       try
+%           val = [val; str2double(event(i).value)];
+%       catch
+%           val = [val; nan];
+%       end
+      
     end
   end
 end

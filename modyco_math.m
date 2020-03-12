@@ -3,69 +3,94 @@
 % Created: June 2019
 % Updated: October 2019
 
+% Comparisons:
+% 2 Groups: comparison for FR & BI, for each of the 4 conditions and each of the 2 modalities
+% 4 conditions: comparison for sPo(2), spO(3), spo (4), for each of the 2 groups and each of the 2 modalities
+% 2 modalities: comparison for auditory part & visual part , for each of the 2 groups and each of the 4 conditions
+% 3 Proficiency levels: comparison for  A,B,C,  for each of the 4 conditions and each of the 2 modalities (for the BI group only)
+
+% fr1 bi1, fr2 bi2, fr3 bi3, fr4 bi4, fr5 bi5, fr6 bi6, fr7 bi7, fr8 bi8
+% fr15 bi15, fr26 bi26, fr37 bi37, fr48 bi48
+% 
+
+
 %% Import settings from file
-mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
+% mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
+mainDir = 'E:/MoDyCo/BILCHIN';
+% cd(mainDir); addpath('../MoDyCoEEGpipeline');
+% mainDir = 'C:\Users\S2CH\Desktop\BILCHIN_Analysis';
 cd(mainDir); addpath('../MoDyCoEEGpipeline');
 
 modyco_settings_project
+home
 %% Mean and store data by participant
 % averages    = [];
 % differences = [];
-for sub = 8%1:length(subs)
+skip = [];
+for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
-    load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
-    cfg                  = default_cfg;%data.cfg;
-    cfg.method           = 'average';
-    cfg.missingchannel   = setdiff(allElecs.label,data.label);
-    cfg.neighbours       = neighbors;
-    cfg.feedback         = 'no';
-    % Interpolate missing channels
-    if ~isempty(cfg.missingchannel)
-        disp('Interpolating missing electrodes:');
-        for chan = cfg.missingchannel
-            disp(chan);
+%     load([folders.rmvArtfct,'\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+    load(['D:\removeComponents','\\',subID,'_',folders.rmvArtfct,'.mat'],'data');
+    try
+        if ~isfield(data,'trialinfo')
+            load([folders.prep,'\\',subID,'_',folders.prep,'_cfg.mat'],'cfg');
+            data.trialinfo = cfg.trl(:,4);
         end
-        data             = ft_channelrepair(cfg,data);
+        cfg                  = default_cfg;%data.cfg;
+        cfg.method           = 'average';
+        cfg.missingchannel   = setdiff(allElecs.label,data.label);
+        cfg.neighbours       = neighbors;
+        cfg.feedback         = 'no';
+        % Interpolate missing channels
+        if ~isempty(cfg.missingchannel)
+            disp('Interpolating missing electrodes:');
+            for chan = cfg.missingchannel
+                disp(chan);
+            end
+            data             = ft_channelrepair(cfg,data);
+        end
+        % Average all trials for each condition
+        for cond = 9:numberOfConditions
+            disp(['Averaging over trials for condition ',num2str(cond),'...']);
+            cfg            = default_cfg;%data.cfg;
+            cfg.trials     = find(ismember(data.trialinfo,trials{cond}));
+            averages{cond} = ft_timelockanalysis(cfg,data);
+            cfg = rmfield(cfg,'demean');
+            averages{cond} = ft_timelockbaseline(cfg,averages{cond});
+        end
+        % Do subtraction between condition pairs of interest
+        for P = 1:length(pairs)
+            pair = pairs{P};
+            disp(['Computing difference between conditions ',num2str(pair(1)),' and ',num2str(pair(2)),'...']);
+            cfg            = default_cfg;%data.cfg;
+            cfg.operation  = 'subtract';
+            cfg.parameter  = 'avg';
+            differences{P} = ft_math(cfg, averages{pair(1)}, averages{pair(2)});
+        end
+        disp(['Saving data file ',subID,' (',num2str(sub),')...']);
+        save([folders.timelock,'\\',subID,'_',folders.timelock,'_average.mat'],'averages');
+        disp(['Saving difference file ',subID,' (',num2str(sub),')...']);
+        save([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'differences');
+    catch
+        skip(end+1) = sub;
     end
-    % Average all trials for each condition
-    for cond = 5:8%1:numberOfConditions
-        disp(['Averaging over trials for condition ',num2str(cond),'...']);
-        cfg            = default_cfg;%data.cfg;
-        cfg.trials     = find(ismember(data.trialinfo,trials{cond}));
-        averages{cond} = ft_timelockanalysis(cfg,data);
-        cfg = rmfield(cfg,'demean');
-        averages{cond} = ft_timelockbaseline(cfg,averages{cond});
-    end
-    % Do subtraction between condition pairs of interest
-    for P = 4:6%1:length(pairs)
-        pair = pairs{P};
-        disp(['Computing difference between conditions ',num2str(pair(1)),' and ',num2str(pair(2)),'...']);
-        cfg            = default_cfg;%data.cfg;
-        cfg.operation  = 'subtract';
-        cfg.parameter  = 'avg';
-        differences{P} = ft_math(cfg, averages{pair(1)}, averages{pair(2)});
-    end
-    disp(['Saving data file ',subID,' (',num2str(sub),')...']);
-    save([folders.timelock,'\\',subID,'_',folders.timelock,'_average.mat'],'averages');
-    disp(['Saving difference file ',subID,' (',num2str(sub),')...']);
-    save([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'differences');
 end
 waitbar(1,'Done! Now do grand averaging!');
 %% Read data into array for grand averaging
-% D = [];
-for sub = 8%1:length(subs)
+D = [];
+for sub = 1:length(subs)
     subID = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.timelock,'\\',subID,'_',folders.timelock,'_average.mat'],'averages');
     load([folders.timelock,'\\',subID,'_',folders.timelock,'_diff.mat'],'differences');
     disp('Storing data in struct...');
-%     averages{cond}.cfg = rmfield(averages{cond}.cfg,'previous');
-    for cond = 5:8%1:numberOfConditions
+    for cond = 9:numberOfConditions
+%         averages{cond}.cfg = rmfield(averages{cond}.cfg,'previous');
         D.avgs{sub,cond} = averages{cond};
         D.avgs{sub,cond}.cfg = rmfield(D.avgs{sub,cond}.cfg,'previous');
     end
-    for P = 4:6%1:length(pairs)
+    for P = 1:length(pairs)
         D.diffs{sub,P} = differences{P};
         D.diffs{sub,cond}.cfg = rmfield(D.diffs{sub,P}.cfg,'previous');
     end
@@ -77,16 +102,35 @@ cfg.baseline = 'yes';
 cfg.refchannel = 'M';
 grandAvg = [];
 
-% Natives
-grandAvg{1,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,5});
-grandAvg{2,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,6});
-grandAvg{3,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,7});
-grandAvg{4,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,8});
-% Bilinguals
-grandAvg{1,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,5});
-grandAvg{2,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,6});
-grandAvg{3,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,7});
-grandAvg{4,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,8});
+load([folders.timelock,'\\allData.mat'],'D');
+
+% grp = ['no'];
+frMask = zeros(length(subs),1);
+biMask = zeros(length(subs),1);
+for sub = [1:3,9:15,17,19,21:24]%2:length(subs)
+    if strcmp(subs{sub}(6:7), 'FR')
+        frMask(sub) = 1;
+    elseif strcmp(subs{sub}(6:7), 'BI')
+        biMask(sub) = 1;
+    end
+end
+frMask = frMask == 1;
+biMask = biMask == 1;
+
+
+for Idx = 9:numberOfConditions
+    % Natives (column 1)
+    grandAvg{Idx,1} = ft_timelockgrandaverage(cfg, D.avgs{frMask,Idx});
+    % Bilinguals (column 2)
+    grandAvg{Idx,2} = ft_timelockgrandaverage(cfg, D.avgs{biMask,Idx});
+end
+
+for Idx = 1:length(pairs)
+    % Natives (column 1)
+    grandDiff{Idx,1} = ft_timelockgrandaverage(cfg, D.diffs{frMask,Idx});
+    % Bilinguals (column 2)
+    grandDiff{Idx,2} = ft_timelockgrandaverage(cfg, D.diffs{biMask,Idx});
+end
 
 % % Natives
 % grandAvg{1,1} = ft_timelockgrandaverage(cfg, D.avgs{1:4,1});
@@ -99,26 +143,111 @@ grandAvg{4,2} = ft_timelockgrandaverage(cfg, D.avgs{5:8,8});
 % grandAvg{3,2} = ft_timelockgrandaverage(cfg, D.avgs{5:7,3});
 % grandAvg{4,2} = ft_timelockgrandaverage(cfg, D.avgs{5:7,4});
 
+save('results/grandAvg.mat','grandAvg','grandDiff')
+disp('Saved!')
+%%
+load('results/grandAvg.mat','grandAvg')
 %%
 figure(1)
 cfg = [];
 cfg.layout = default_cfg.layout;
-ft_multiplotER(cfg,grandAvg{2,1},grandAvg{3,1},grandAvg{4,1})
+ft_multiplotER(cfg,grandAvg{10,2},grandAvg{11,2},grandDiff{1,2})
 %%
 cfg = [];
-figure(2)
+cfg.linewidth = 1;
+cfg.ylim = [-7 7];
+% figure;
+
+coef = 2; % 0 = aud, 1 = vis, 2 = combined
 
 pop = 2; % 1 is native, 2 is bilingual
+
+for pop = 2%[1,2]
+    for coef = 2%[0,1,2]
+        figure;
+        subplot(3,1,1)
+        cfg.channel = 'Fz';
+%         ft_singleplotER(cfg,grandAvg{coef*4 + 2,pop},grandAvg{coef*4 + 4,pop},grandDiff{1,pop});%grandAvg{coef*4 + 4,pop});
+        ft_singleplotER(cfg,grandDiff{1,pop});
+        hold on
+        plot([-.1 .8],[0 0],'k')
+%         plot([0 0], cfg.ylim,'k')
+        set(gca, 'YDir', 'reverse')
+        ylabel('Voltage (\muV)')
+        xlabel('Time (s)')
+%         title(bilchinTitle(pop,coef,''))
+        legend({'sPo','spo','diff'})
+        subplot(3,1,2)
+        cfg.channel = 'Cz';
+%         ft_singleplotER(cfg,grandAvg{coef*4 + 2,pop},grandAvg{coef*4 + 4,pop},grandDiff{1,pop});%grandAvg{coef*4 + 4,pop});
+        ft_singleplotER(cfg,grandDiff{1,pop});
+        hold on
+%         plot([0 0], cfg.ylim,'k')
+        plot([-.1 .8],[0 0],'k')
+        set(gca, 'YDir', 'reverse')
+        ylabel('Voltage (\muV)')
+        xlabel('Time (s)')
+        subplot(3,1,3)
+        cfg.channel = 'Pz';
+%         ft_singleplotER(cfg,grandAvg{coef*4 + 2,pop},grandAvg{coef*4 + 4,pop},grandDiff{1,pop});%grandAvg{coef*4 + 4,pop});
+        ft_singleplotER(cfg,grandDiff{1,pop});
+        hold on
+        plot([-.1 .8],[0 0],'k')
+%         plot([0 0], cfg.ylim,'k')
+        set(gca, 'YDir', 'reverse')
+        ylabel('Voltage (\muV)')
+        xlabel('Time (s)')
+    end
+end
+%%
+cfg = [];
+cfg.linewidth = 1;
+cfg.ylim = [-7 7];
+% figure;
+
+coef = 0; % 0 = aud, 1 = vis, 2 = combined
+
+for cond = [2,3]
+    figure;
+    subplot(3,1,1)
+    cfg.channel = 'Fz';
+    ft_singleplotER(cfg,grandAvg{coef*4 + cond,1},grandAvg{coef*4 + cond,2});
+    set(gca, 'YDir', 'reverse')
+    ylabel('Voltage (\muV)')
+    xlabel('Time (s)')
+    title(bilchinTitle('',coef,cond))
+    legend({'Native','Bilingual'})
+    subplot(3,1,2)
+    cfg.channel = 'Cz';
+    ft_singleplotER(cfg,grandAvg{coef*4 + cond,1},grandAvg{coef*4 + cond,2});
+    set(gca, 'YDir', 'reverse')
+    ylabel('Voltage (\muV)')
+    xlabel('Time (s)')
+    subplot(3,1,3)
+    cfg.channel = 'Pz';
+    ft_singleplotER(cfg,grandAvg{coef*4 + cond,1},grandAvg{coef*4 + cond,2});
+    set(gca, 'YDir', 'reverse')
+    ylabel('Voltage (\muV)')
+    xlabel('Time (s)')
+end
+%%
 subplot(3,1,1)
 cfg.channel = 'Fz';
-ft_singleplotER(cfg,grandAvg{2,pop},grandAvg{3,pop},grandAvg{4,pop});
+ft_singleplotER(cfg,grandAvg{coef*4 + 1,pop},grandAvg{coef*4 + 2,pop},grandAvg{coef*4 + 3,pop},grandAvg{coef*4 + 4,pop});
+ylim(yLims)
+set(gca, 'YDir', 'reverse')
+title(bilchinTitle(pop,coef))
+legend({'Spo','sPo','spO','spo'})
 subplot(3,1,2)
 cfg.channel = 'Cz';
-ft_singleplotER(cfg,grandAvg{2,pop},grandAvg{3,pop},grandAvg{4,pop});
+ft_singleplotER(cfg,grandAvg{coef*4 + 1,pop},grandAvg{coef*4 + 2,pop},grandAvg{coef*4 + 3,pop},grandAvg{coef*4 + 4,pop});
+ylim(yLims)
+set(gca, 'YDir', 'reverse')
 subplot(3,1,3)
 cfg.channel = 'Pz';
-ft_singleplotER(cfg,grandAvg{2,pop},grandAvg{3,pop},grandAvg{4,pop});
-legend({'Cond 2','Cond 3','Cond 4'})
+ft_singleplotER(cfg,grandAvg{coef*4 + 1,pop},grandAvg{coef*4 + 2,pop},grandAvg{coef*4 + 3,pop},grandAvg{coef*4 + 4,pop});
+ylim(yLims)
+set(gca, 'YDir', 'reverse')
 %%
 
 % cfg.channel = swedChans;

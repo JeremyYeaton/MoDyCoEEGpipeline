@@ -5,35 +5,55 @@
 
 %% Import settings from file
 % mainDir      = 'C:\Users\jdyea\OneDrive\MoDyCo\_pilotSWOP\yaru'; % Change this to your experimental directory
-mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
-cd(mainDir); addpath('../MoDyCoEEGpipeline');
+% mainDir = 'C:/Users/LPC/Documents/JDY/bilchin';
+% mainDir = 'C:/Users/S2CH/Documents/BILCHIN';
+mainDir = 'C:\Users\S2CH\Desktop\BILCHIN_Analysis';
+cd(mainDir); addpath('MoDyCoEEGpipeline');
 
 modyco_settings_project
+disp(['Total participants: ' num2str(length(subs))])
+%%%%%%%%
+% Change visual rejection to automatic
+%%%%%%%%
+
 %% Import; epoch; filter; separate & mean EOGs
 tic
-currSub = 3;
-for sub = 1%currSub:length(subs)
+currSub = 1;
+for sub = [4 5 6 7 8 16 18 20 25 26 27]%currSub:length(subs)
     subID            = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     EEGLABFILE       = [folders.prep,'\\',subID,'_',folders.eeglabTag,'.set'];
     if ~isfile(EEGLABFILE)
-        EEG              = pop_biosig([mainDir,'\\EEG_data\\BILCHIN_',subID,'.bdf'],...
+        EEG              = pop_biosig([mainDir,'/raw/BILCHIN_',subID,'.bdf'],...
             'channels',1:70,'ref',[65 66] ,'refoptions',{'keepref' 'on'});
         EEG              = eeg_checkset( EEG );
         EEG              = pop_saveset( EEG, 'filename',EEGLABFILE,'filepath',[mainDir,'\\']);
+        % Interpolate bad channels here
     end
-% end
-% %%
+
     cfg                     = default_cfg;
     cfg.refchannel          = {'M1' 'M2'};
     cfg.preproc.refchannel  = {'M1' 'M2'};
     cfg.dataset             = EEGLABFILE;
-    tradFileName            = ['yaru\' subID(1:4) '_trad.csv'];
-    if exist(tradFileName,'file')
-        trad = readtable(tradFileName);
-        cfg.trialdef.trad = trad.Traduction;
+    tradFileName            = ['resTrans\' num2str(subID(1:4)) '.txt'];
+    trad = readtable(tradFileName,'Delimiter','\t');
+    trad.comb(isnan(trad.comb)) = 0;
+    cfg.trialdef.cond = trad.conditionNb;
+    cfg.trialdef.trad = trad.comb;
+%     cfg.trialdef.version = 'new';
+    if sub > 9 %% 11
+        cfg.trialdef.version = 'new';
+    else
+        cfg.trialdef.version = 'old';
     end
     cfg                     = ft_definetrial(cfg);
+%     %%%%%%%%%%%%%
+%     fileName = [folders.prep,'\\',subID,'_',folders.prep,'_cfg.mat'];
+%     disp(['Saving ',fileName,' (',num2str(sub),')...']);
+%     save(fileName,'cfg')
+%     %%%%%%%%%%%%%
+% end
+% %%
     data                    = ft_preprocessing(cfg);
     % Separate, mean, and recombine bipolar channels
     % HEOG
@@ -97,7 +117,7 @@ for sub = 1%currSub:length(subs)
 end
 waitbar(1,'Done! Now do visual rejection!');
 %% Visual rejection (Summary, channel, or trial)
-for sub = 1%1:length(subs)
+for sub = [4 5 6 7 8 16 18 20 25 26 27]%length(subs)
     subID                = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data');
@@ -122,19 +142,20 @@ for sub = 1%1:length(subs)
 end
 waitbar(1,'Done! Now do ICA decomposition!');
 %% ICA decomposition
-for sub = 1%1:length(subs)
+for sub = [4 5 6 7 8 16 18 20 25 26 27]%[2:3,5:length(subs)]
     subID      = subs{sub};
     saveName   = [folders.ica,'\\',subID,'_',folders.ica,'.mat'];
     saveFile   = 'y';
-    if isfile(saveName)
-        saveFile = input(['File for ',subID,' already exists. Overwrite? [y/n]'],'s');
-        if strcmp(saveFile,'n')
-            disp('File not saved. ICA decomp already exists.');
-        end
-    end
+%     if isfile(saveName)
+%         saveFile = input(['File for ',subID,' already exists. Overwrite? [y/n]'],'s');
+%         if strcmp(saveFile,'n')
+%             disp('File not saved. ICA decomp already exists.');
+%         end
+%     end
     if strcmp(saveFile,'y')
         disp(['Loading subject ',subID,' (',num2str(sub),')...']);
         load([folders.visRej,'\\',subID,'_',folders.visRej,'.mat'],'data');
+%         load([folders.prep,'\\',subID,'_',folders.prep,'.mat'],'data');
         cfg              = default_cfg;%data.cfg;
         cfg.numcomponent = 25;
         cfg.method       = 'runica';
@@ -145,7 +166,7 @@ for sub = 1%1:length(subs)
 end
 waitbar(1,'Done! Now do component rejection!');
 %% Component rejection
-for sub = 1%1:length(subs)
+for sub = [4 5 6 7 8 16 18 20 25 26 27]%[2:3,5:length(subs)]
     subID         = subs{sub};
     disp(['Loading subject ',subID,' (',num2str(sub),')...']);
     load([folders.ica,'\\',subID,'_',folders.ica,'.mat'],'data','comp');
